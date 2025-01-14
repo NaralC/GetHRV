@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Measures</title>
+</head>
+<body>
+    <table class="table table-striped" id="hrv_table">
+        <thead>
+        <tr>
+            <th>bpm</th>
+            <th>ibi</th>
+            <th>sdnn</th>
+            <th>sdsd</th>
+            <th>rmssd</th>
+            <th>pnn20</th>
+            <th>pnn50</th>
+            <th>hr_mad</th>
+            <th>sd1</th>
+            <th>sd2</th>
+            <th>s</th>
+            <th>sd1/sd2</th>
+            <th>breathingrate</th>
+            <th>vlf</th>
+            <th>lf</th>
+            <th>hf</th>
+            <th>lf/hf</th>
+            <th>p_total</th>
+            <th>vlf_perc</th>
+            <th>lf_perc</th>
+            <th>hf_perc</th>
+            <th>lf_nu</th>
+            <th>hf_nu</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for key, value in measures.items %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+             </tbody>
+    </table>
+    <p>{{ measures }}</p>
+</body>
+</html>

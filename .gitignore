@@ -1,0 +1,9 @@
+hrv/__pycache__/*
+polls/migrations/__pycache__/*
+mysite/__pycache__/*
+hrv/migrations/__pycache__/*
+hrv/__pycache__/*
+polls/__pycache__/*
+polls/migrations/__pycache__/*
+mysite/__pycache__/**
+mysite/__pycache__/settings.cpython-310.pyc
