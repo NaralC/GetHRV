@@ -24,9 +24,9 @@
       <form id="colorForm" class="space-y-4">
         <!-- Very Happy -->
         <div class="flex items-center justify-between">
-          <label for="very-happy-color" class="text-gray-700 font-medium"
-            >Very Happy:</label
-          >
+          <label for="very-happy-color" class="text-gray-700 font-medium w-1/3">
+            Very Happy:
+          </label>
           <input
             type="color"
             id="very-happy-color"
@@ -34,13 +34,21 @@
             value="#FFD700"
             class="w-12 h-12 border-2 border-gray-300 rounded-lg"
           />
+          <input
+            type="text"
+            id="very-happy-hex"
+            name="very_happy_hex"
+            value="#FFD700"
+            class="border border-gray-300 rounded-lg w-24 text-center"
+            maxlength="7"
+          />
         </div>
 
         <!-- Happy -->
         <div class="flex items-center justify-between">
-          <label for="happy-color" class="text-gray-700 font-medium"
-            >Happy:</label
-          >
+          <label for="happy-color" class="text-gray-700 font-medium w-1/3">
+            Happy:
+          </label>
           <input
             type="color"
             id="happy-color"
@@ -48,13 +56,21 @@
             value="#FFFF00"
             class="w-12 h-12 border-2 border-gray-300 rounded-lg"
           />
+          <input
+            type="text"
+            id="happy-hex"
+            name="happy_hex"
+            value="#FFFF00"
+            class="border border-gray-300 rounded-lg w-24 text-center"
+            maxlength="7"
+          />
         </div>
 
         <!-- Neutral -->
         <div class="flex items-center justify-between">
-          <label for="neutral-color" class="text-gray-700 font-medium"
-            >Neutral:</label
-          >
+          <label for="neutral-color" class="text-gray-700 font-medium w-1/3">
+            Neutral:
+          </label>
           <input
             type="color"
             id="neutral-color"
@@ -62,11 +78,19 @@
             value="#C0C0C0"
             class="w-12 h-12 border-2 border-gray-300 rounded-lg"
           />
+          <input
+            type="text"
+            id="neutral-hex"
+            name="neutral_hex"
+            value="#C0C0C0"
+            class="border border-gray-300 rounded-lg w-24 text-center"
+            maxlength="7"
+          />
         </div>
 
         <!-- Sad -->
         <div class="flex items-center justify-between">
-          <label for="sad-color" class="text-gray-700 font-medium">Sad:</label>
+          <label for="sad-color" class="text-gray-700 font-medium w-1/3">Sad:</label>
           <input
             type="color"
             id="sad-color"
@@ -74,19 +98,35 @@
             value="#87CEEB"
             class="w-12 h-12 border-2 border-gray-300 rounded-lg"
           />
+          <input
+            type="text"
+            id="sad-hex"
+            name="sad_hex"
+            value="#87CEEB"
+            class="border border-gray-300 rounded-lg w-24 text-center"
+            maxlength="7"
+          />
         </div>
 
         <!-- Very Sad -->
         <div class="flex items-center justify-between">
-          <label for="very-sad-color" class="text-gray-700 font-medium"
-            >Very Sad:</label
-          >
+          <label for="very-sad-color" class="text-gray-700 font-medium w-1/3">
+            Very Sad:
+          </label>
           <input
             type="color"
             id="very-sad-color"
             name="very_sad"
             value="#1E90FF"
             class="w-12 h-12 border-2 border-gray-300 rounded-lg"
+          />
+          <input
+            type="text"
+            id="very-sad-hex"
+            name="very_sad_hex"
+            value="#1E90FF"
+            class="border border-gray-300 rounded-lg w-24 text-center"
+            maxlength="7"
           />
         </div>
 
@@ -123,16 +163,20 @@
           verySad: "#1E90FF",
         };
 
-        // Load saved colors or use defaults
         const colors =
           JSON.parse(localStorage.getItem("emotionColors")) || defaultColors;
 
-        // Set color pickers with loaded values
+        // Set values for color pickers and hex inputs
         document.getElementById("very-happy-color").value = colors.veryHappy;
+        document.getElementById("very-happy-hex").value = colors.veryHappy;
         document.getElementById("happy-color").value = colors.happy;
+        document.getElementById("happy-hex").value = colors.happy;
         document.getElementById("neutral-color").value = colors.neutral;
+        document.getElementById("neutral-hex").value = colors.neutral;
         document.getElementById("sad-color").value = colors.sad;
+        document.getElementById("sad-hex").value = colors.sad;
         document.getElementById("very-sad-color").value = colors.verySad;
+        document.getElementById("very-sad-hex").value = colors.verySad;
       }
 
       // Function to save colors to localStorage
@@ -147,25 +191,62 @@
           verySad: document.getElementById("very-sad-color").value,
         };
 
-        // Save colors to localStorage
         localStorage.setItem("emotionColors", JSON.stringify(colors));
         alert("Colors saved successfully!");
       }
 
-      // Function to reset colors to defaults
+      // Sync color pickers and hex inputs
+      function syncColorPickerWithHex(colorId, hexId) {
+        const colorPicker = document.getElementById(colorId);
+        const hexInput = document.getElementById(hexId);
+
+        // Update hex when color picker changes
+        colorPicker.addEventListener("input", () => {
+          hexInput.value = colorPicker.value.toUpperCase();
+        });
+
+        // Update color picker when hex input changes
+        hexInput.addEventListener("input", () => {
+          if (/^#[0-9A-F]{6}$/i.test(hexInput.value)) {
+            colorPicker.value = hexInput.value.toUpperCase();
+          }
+        });
+      }
+
+      // Function to reset colors temporarily
       function resetColors() {
-        localStorage.removeItem("emotionColors");
-        loadColors();
-        alert("Colors reset to defaults.");
+        const defaultColors = {
+          veryHappy: "#FFD700",
+          happy: "#FFFF00",
+          neutral: "#C0C0C0",
+          sad: "#87CEEB",
+          verySad: "#1E90FF",
+        };
+
+        document.getElementById("very-happy-color").value = defaultColors.veryHappy;
+        document.getElementById("very-happy-hex").value = defaultColors.veryHappy;
+        document.getElementById("happy-color").value = defaultColors.happy;
+        document.getElementById("happy-hex").value = defaultColors.happy;
+        document.getElementById("neutral-color").value = defaultColors.neutral;
+        document.getElementById("neutral-hex").value = defaultColors.neutral;
+        document.getElementById("sad-color").value = defaultColors.sad;
+        document.getElementById("sad-hex").value = defaultColors.sad;
+        document.getElementById("very-sad-color").value = defaultColors.verySad;
+        document.getElementById("very-sad-hex").value = defaultColors.verySad;
+
+        alert("Colors reset to defaults (temporary).");
       }
 
       // Event listeners
-      document
-        .getElementById("colorForm")
-        .addEventListener("submit", saveColors);
-      document
-        .getElementById("resetColors")
-        .addEventListener("click", resetColors);
+      document.getElementById("colorForm").addEventListener("submit", saveColors);
+      document.getElementById("resetColors").addEventListener("click", resetColors);
+
+      // Sync all color pickers and hex inputs
+      syncColorPickerWithHex("very-happy-color", "very-happy-hex");
+      syncColorPickerWithHex("happy-color", "happy-hex");
+      syncColorPickerWithHex("neutral-color", "neutral-hex");
+      syncColorPickerWithHex("sad-color", "sad-hex");
+      syncColorPickerWithHex("very-sad-color", "very-sad-hex");
 
       // Load colors on page load
       window.onload = loadColors;
