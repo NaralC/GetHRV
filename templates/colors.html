@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customize Emotion Colors</title>
+    <style>
+      body {
+        font-family: Inter;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+      <h1 class="text-2xl font-bold text-center text-gray-800 mb-4">
+        Customize Emotion Colors
+      </h1>
+      <p class="text-gray-600 text-center mb-6">
+        Select a color for each emotion range below. Your choices will be saved
+        locally.
+      </p>
+
+      <form id="colorForm" class="space-y-4">
+        <!-- Very Happy -->
+        <div class="flex items-center justify-between">
+          <label for="very-happy-color" class="text-gray-700 font-medium"
+            >Very Happy:</label
+          >
+          <input
+            type="color"
+            id="very-happy-color"
+            name="very_happy"
+            value="#FFD700"
+            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <!-- Happy -->
+        <div class="flex items-center justify-between">
+          <label for="happy-color" class="text-gray-700 font-medium"
+            >Happy:</label
+          >
+          <input
+            type="color"
+            id="happy-color"
+            name="happy"
+            value="#FFFF00"
+            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <!-- Neutral -->
+        <div class="flex items-center justify-between">
+          <label for="neutral-color" class="text-gray-700 font-medium"
+            >Neutral:</label
+          >
+          <input
+            type="color"
+            id="neutral-color"
+            name="neutral"
+            value="#C0C0C0"
+            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <!-- Sad -->
+        <div class="flex items-center justify-between">
+          <label for="sad-color" class="text-gray-700 font-medium">Sad:</label>
+          <input
+            type="color"
+            id="sad-color"
+            name="sad"
+            value="#87CEEB"
+            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <!-- Very Sad -->
+        <div class="flex items-center justify-between">
+          <label for="very-sad-color" class="text-gray-700 font-medium"
+            >Very Sad:</label
+          >
+          <input
+            type="color"
+            id="very-sad-color"
+            name="very_sad"
+            value="#1E90FF"
+            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <!-- Spacer -->
+        <div class="py-4" />
+
+        <!-- Save Button -->
+        <button
+          type="submit"
+          class="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 transition"
+        >
+          Save Colors
+        </button>
+      </form>
+
+      <!-- Reset Button -->
+      <button
+        id="resetColors"
+        type="button"
+        class="w-full bg-gray-200 text-gray-700 font-semibold py-2 mt-4 rounded-lg hover:bg-gray-300 transition"
+      >
+        Reset to Defaults
+      </button>
+    </div>
+
+    <script>
+      // Function to load colors from localStorage
+      function loadColors() {
+        const defaultColors = {
+          veryHappy: "#FFD700",
+          happy: "#FFFF00",
+          neutral: "#C0C0C0",
+          sad: "#87CEEB",
+          verySad: "#1E90FF",
+        };
+
+        // Load saved colors or use defaults
+        const colors =
+          JSON.parse(localStorage.getItem("emotionColors")) || defaultColors;
+
+        // Set color pickers with loaded values
+        document.getElementById("very-happy-color").value = colors.veryHappy;
+        document.getElementById("happy-color").value = colors.happy;
+        document.getElementById("neutral-color").value = colors.neutral;
+        document.getElementById("sad-color").value = colors.sad;
+        document.getElementById("very-sad-color").value = colors.verySad;
+      }
+
+      // Function to save colors to localStorage
+      function saveColors(event) {
+        event.preventDefault();
+
+        const colors = {
+          veryHappy: document.getElementById("very-happy-color").value,
+          happy: document.getElementById("happy-color").value,
+          neutral: document.getElementById("neutral-color").value,
+          sad: document.getElementById("sad-color").value,
+          verySad: document.getElementById("very-sad-color").value,
+        };
+
+        // Save colors to localStorage
+        localStorage.setItem("emotionColors", JSON.stringify(colors));
+        alert("Colors saved successfully!");
+      }
+
+      // Function to reset colors to defaults
+      function resetColors() {
+        localStorage.removeItem("emotionColors");
+        loadColors();
+        alert("Colors reset to defaults.");
+      }
+
+      // Event listeners
+      document
+        .getElementById("colorForm")
+        .addEventListener("submit", saveColors);
+      document
+        .getElementById("resetColors")
+        .addEventListener("click", resetColors);
+
+      // Load colors on page load
+      window.onload = loadColors;
+    </script>
+  </body>
+</html>

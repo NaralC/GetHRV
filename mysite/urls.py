@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from colors.views import colors_view
 
 from . import view
 
@@ -22,5 +23,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("test/", view.post),
     path('polls/', include('polls.urls')),
-    path("hrv/", include("hrv.urls"))
+    path("hrv/", include("hrv.urls")),
+    path("colors/", colors_view, name='colors')
 ]

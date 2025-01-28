@@ -7,3 +7,5 @@ polls/__pycache__/*
 polls/migrations/__pycache__/*
 mysite/__pycache__/**
 mysite/__pycache__/settings.cpython-310.pyc
+colors/__pycache__/__init__.cpython-311.pyc
+colors/__pycache__/views.cpython-311.pyc
