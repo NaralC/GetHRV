@@ -90,7 +90,9 @@
 
         <!-- Sad -->
         <div class="flex items-center justify-between">
-          <label for="sad-color" class="text-gray-700 font-medium w-1/3">Sad:</label>
+          <label for="sad-color" class="text-gray-700 font-medium w-1/3"
+            >Sad:</label
+          >
           <input
             type="color"
             id="sad-color"
@@ -148,51 +150,84 @@
         type="button"
         class="w-full bg-gray-200 text-gray-700 font-semibold py-2 mt-4 rounded-lg hover:bg-gray-300 transition"
       >
-        Reset to Defaults
+        Reset to Defaults (Does not save)
       </button>
     </div>
 
     <script>
       // Function to load colors from localStorage
       function loadColors() {
-        const defaultColors = {
-          veryHappy: "#FFD700",
-          happy: "#FFFF00",
-          neutral: "#C0C0C0",
-          sad: "#87CEEB",
-          verySad: "#1E90FF",
-        };
+        fetch("http://127.0.0.1:8000/colors/get-colors")
+          .then((response) => response.json())
+          .then((colors) => {
+            // Use default colors if the response is missing any fields
+            const defaultColors = {
+              veryHappy: colors.very_happy || "#FFD700",
+              happy: colors.happy || "#FFFF00",
+              neutral: colors.neutral || "#C0C0C0",
+              sad: colors.sad || "#87CEEB",
+              verySad: colors.very_sad || "#1E90FF",
+            };
 
-        const colors =
-          JSON.parse(localStorage.getItem("emotionColors")) || defaultColors;
+            // Set values for color pickers and hex inputs
+            document.getElementById("very-happy-color").value =
+              defaultColors.veryHappy;
+            document.getElementById("very-happy-hex").value =
+              defaultColors.veryHappy;
+            document.getElementById("happy-color").value = defaultColors.happy;
+            document.getElementById("happy-hex").value = defaultColors.happy;
+            document.getElementById("neutral-color").value =
+              defaultColors.neutral;
+            document.getElementById("neutral-hex").value =
+              defaultColors.neutral;
+            document.getElementById("sad-color").value = defaultColors.sad;
+            document.getElementById("sad-hex").value = defaultColors.sad;
+            document.getElementById("very-sad-color").value =
+              defaultColors.verySad;
+            document.getElementById("very-sad-hex").value =
+              defaultColors.verySad;
 
-        // Set values for color pickers and hex inputs
-        document.getElementById("very-happy-color").value = colors.veryHappy;
-        document.getElementById("very-happy-hex").value = colors.veryHappy;
-        document.getElementById("happy-color").value = colors.happy;
-        document.getElementById("happy-hex").value = colors.happy;
-        document.getElementById("neutral-color").value = colors.neutral;
-        document.getElementById("neutral-hex").value = colors.neutral;
-        document.getElementById("sad-color").value = colors.sad;
-        document.getElementById("sad-hex").value = colors.sad;
-        document.getElementById("very-sad-color").value = colors.verySad;
-        document.getElementById("very-sad-hex").value = colors.verySad;
+            // Store fetched colors in localStorage for faster subsequent loads
+            localStorage.setItem(
+              "emotionColors",
+              JSON.stringify(defaultColors)
+            );
+          })
+          .catch((error) => {
+            console.error("Error fetching colors:", error);
+          });
       }
+
+      // Call loadColors when the page loads
+      window.onload = loadColors;
 
       // Function to save colors to localStorage
       function saveColors(event) {
         event.preventDefault();
 
         const colors = {
-          veryHappy: document.getElementById("very-happy-color").value,
+          very_happy: document.getElementById("very-happy-color").value,
           happy: document.getElementById("happy-color").value,
           neutral: document.getElementById("neutral-color").value,
           sad: document.getElementById("sad-color").value,
-          verySad: document.getElementById("very-sad-color").value,
+          very_sad: document.getElementById("very-sad-color").value,
         };
 
-        localStorage.setItem("emotionColors", JSON.stringify(colors));
-        alert("Colors saved successfully!");
+        fetch("http://127.0.0.1:8000/colors/save-colors", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(colors),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              alert("Colors saved successfully!");
+            } else {
+              alert("Error saving colors: " + data.message);
+            }
+          });
       }
 
       // Sync color pickers and hex inputs
@@ -223,8 +258,10 @@
           verySad: "#1E90FF",
         };
 
-        document.getElementById("very-happy-color").value = defaultColors.veryHappy;
-        document.getElementById("very-happy-hex").value = defaultColors.veryHappy;
+        document.getElementById("very-happy-color").value =
+          defaultColors.veryHappy;
+        document.getElementById("very-happy-hex").value =
+          defaultColors.veryHappy;
         document.getElementById("happy-color").value = defaultColors.happy;
         document.getElementById("happy-hex").value = defaultColors.happy;
         document.getElementById("neutral-color").value = defaultColors.neutral;
@@ -233,13 +270,15 @@
         document.getElementById("sad-hex").value = defaultColors.sad;
         document.getElementById("very-sad-color").value = defaultColors.verySad;
         document.getElementById("very-sad-hex").value = defaultColors.verySad;
-
-        alert("Colors reset to defaults (temporary).");
       }
 
       // Event listeners
-      document.getElementById("colorForm").addEventListener("submit", saveColors);
-      document.getElementById("resetColors").addEventListener("click", resetColors);
+      document
+        .getElementById("colorForm")
+        .addEventListener("submit", saveColors);
+      document
+        .getElementById("resetColors")
+        .addEventListener("click", resetColors);
 
       // Sync all color pickers and hex inputs
       syncColorPickerWithHex("very-happy-color", "very-happy-hex");

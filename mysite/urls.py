@@ -24,5 +24,6 @@ urlpatterns = [
     path("test/", view.post),
     path('polls/', include('polls.urls')),
     path("hrv/", include("hrv.urls")),
-    path("colors/", colors_view, name='colors')
+    path("colors/", colors_view, name='colors'),
+    path('colors/', include('colors.urls')),  # Include the URLs of the colors app
 ]

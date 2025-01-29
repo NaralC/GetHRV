@@ -3,6 +3,8 @@ from django.http import HttpResponse, JsonResponse
 import json
 from collections import deque
 from django.template import loader
+
+from colors.utils import map_sdnn_to_color
 from .data_processing import enqueue, hrv_generator, get_ppg
 from .models import Measures
 from django.forms.models import model_to_dict
@@ -100,9 +102,11 @@ def my_api_endpoint(request):
    measure = Measures.objects.order_by('timeStamp').last()
    #measures_json = serializers.serialize("json", measures)
    measure_dict = model_to_dict(measure)
-   measure_json = json.dumps(measure_dict, ensure_ascii=False, default=str, indent=1)
+#    measure_json = json.dumps(measure_dict, ensure_ascii=False, default=str, indent=1)
+   output = dict()
+   output['color'] = map_sdnn_to_color(measure_dict['sdnn'])
    # Return the data as a JSON response
-   return JsonResponse(measure_json, safe=False)
+   return JsonResponse(output, safe=False)
 
 # Add a new view to retrieve data for a specific watch using its Android ID
 def get_watch_data(request, android_id):
