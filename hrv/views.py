@@ -137,7 +137,7 @@ def map_sdnn_to_color(sdnn: float, emotion_colors) -> str:
 
     # Map sdnn to a color based on ranges (arbitrary example ranges)
     if sdnn <= 0:
-        return "#616161" # Gray for no data
+        return "#616161" # Pulsing gray for no data
     elif sdnn < 20:
         return emotion_colors["very_sad"]
     elif 20 <= sdnn < 30:
