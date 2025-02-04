@@ -12,7 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
       <h1 class="text-2xl font-bold text-center text-gray-800 mb-4">
         Customize Emotion Colors
       </h1>
@@ -24,6 +24,11 @@
           >⬤ Pulsing Gray</span
         >
         indicates <b>loading data</b>.
+        <br />
+        <span class="font-bold text-red-600 animate-blink"
+          >⬤ Flashing Red</span
+        >
+        indicates <b>there are errors</b> — consider restarting the Python server.
       </p>
 
       <form id="colorForm" class="space-y-4">

@@ -9,6 +9,7 @@ from .data_processing import enqueue, hrv_generator, get_ppg
 from .models import Measures
 from django.forms.models import model_to_dict
 from heartpy.exceptions import BadSignalWarning
+from django.utils.timezone import now
 
 ppg_data = deque()
 ppg = []
@@ -28,75 +29,89 @@ def index(request):
 # 接口函数
 
 
+import json
+from django.http import HttpResponse, JsonResponse
+from django.template import loader
+from .models import Measures
+from django.db.utils import IntegrityError
+
+
 def post(request):
     global ppg_data, ppg, sampling_rate, measures_instance
     global measures
     global num
 
-    # print("Check if the request method is POST")
-    if request.method == "POST":  # 当提交表单时
-        # 判断是否传参
-        num += 1
-        #  print(num)
-        data = json.loads(request.body)
-        # print(data["total_event"])
+    bad_signal = False
 
-        android_id = data.get("android_id", None)
-        # print(f"Received Android ID: {android_id}")
-        if android_id is not None:
-            #  print("Valid Android ID received: ", android_id)
-            #  print("Received data: ", data)
+    try:
+        if request.method == "POST":
+            num += 1
+            data = json.loads(request.body)
 
-            measures_instance = Measures()
-            measures_instance.android_id = android_id
-            # if 'timeStamp' in data:
-            measures_instance.timeStamp = data["time"]
-            if num >= 1 and len(data):
-                ppg_data = enqueue(ppg_data, data)  # Add new data to the buffer
-                if len(ppg_data) >= 60:  # Ensure buffer is sufficient
-                    sampling_rate, ppg, ppg_data = get_ppg(ppg_data, 60)
-                    #  working_data, measures = hrv_generator(measures, ppg, sampling_rate)
-                    try:
-                        working_data, measures = hrv_generator(
-                            measures, ppg, sampling_rate
+            android_id = data.get("android_id", None)
+            if android_id is not None:
+                measures_instance = Measures()
+                measures_instance.android_id = android_id
+                measures_instance.timeStamp = data["time"]
+
+                if num >= 1 and len(data):
+                    ppg_data = enqueue(ppg_data, data)  # Add new data to the buffer
+                    if len(ppg_data) >= 60:  # Ensure buffer is sufficient
+                        sampling_rate, ppg, ppg_data = get_ppg(ppg_data, 60)
+                        try:
+                            working_data, measures = hrv_generator(
+                                measures, ppg, sampling_rate
+                            )
+                        except BadSignalWarning as e:
+                            print("Bad signal warning:", e)
+                            print("Skipping this segment of data.")
+                            bad_signal = True
+
+                        if "sdnn" in measures and measures["sdnn"]:
+                            print("Current SDNN: ", measures["sdnn"])
+                    else:
+                        print(
+                            f"Insufficient buffer size for HRV processing, currently at {len(ppg_data)}. Waiting for more data..."
                         )
-                    except BadSignalWarning as e:
-                        print("Bad signal warning:", e)
-                        print("Skipping this segment of data.")
 
-                    if (
-                        "sdnn" in measures and measures["sdnn"]
-                    ):  # Check if 'sdnn' exists
-                        print("Current SDNN: ", measures["sdnn"])
-                #  else:
-                #      print("SDNN not available yet, waiting for more data...")
-                else:
-                    print(
-                        f"Insufficient buffer size for HRV processing, currently at {len(ppg_data)}. Waiting for more data..."
-                    )
+                    if len(measures):
+                        for key, value in measures.items():
+                            setattr(
+                                measures_instance,
+                                key,
+                                value if value is not None else -1,
+                            )
 
-                # 将processed data 存入数据库 （这一步之前在models.py 中创建class）
+                    for field in Measures._meta.fields:
+                        if (
+                            field.name != "id"
+                            and getattr(measures_instance, field.name) is None
+                        ):
+                            setattr(measures_instance, field.name, -1)
 
-                if len(measures):
-                    # is not empty,saving the data to the database using the 'Measures' model.
+                    if bad_signal:
+                        measures_instance.sdnn = -500
 
-                    for key, value in measures.items():
-                        if value is None:
-                            value = -1
-                        setattr(measures_instance, key, value)
+                    print("Saving SDNN:", measures_instance.sdnn)
+                    measures_instance.save()
 
-                for field in Measures._meta.fields:
-                    if (
-                        field.name != "id"
-                        and getattr(measures_instance, field.name) is None
-                    ):
-                        setattr(measures_instance, field.name, -1)
+    except Exception as e:
+        print("❌ An error occurred:", str(e))
 
-                #  print(f"{field.name}: {getattr(measures_instance, field.name)}")
+        # Ensure an instance is saved with SDNN = -500 on failure
+        try:
+            error_instance = Measures(
+                android_id=android_id if "android_id" in locals() else "unknown",
+                timeStamp=(
+                    data["time"] if "data" in locals() and "time" in data else None
+                ),
+                sdnn=-500,  # Mark error condition
+            )
+            error_instance.save()
+            print("⚠ Error recorded with SDNN = -500")
+        except IntegrityError as db_error:
+            print("⚠ Failed to save error instance:", db_error)
 
-                measures_instance.save()
-
-    # return render(request, "measures.html", {"measures": measures})
     template = loader.get_template("measures.html")
     context = {"measures": measures}
     return HttpResponse(template.render(context, request))
@@ -110,9 +125,20 @@ def my_api_endpoint(request):
     # Retrieve the latest measure entry
     measure = Measures.objects.order_by("timeStamp").last()
 
+    # If data not found — it's still working out the HRV
     if not measure or "sdnn" not in model_to_dict(measure):
-        return JsonResponse({"error": "No valid SDNN data found"}, status=400)
-    
+        return JsonResponse({"color": "loading"})
+
+    print(f"Latest TimeStamp: {measure.timeStamp}")
+
+    # Check if the latest timeStamp is recent
+    if not is_recent(measure.timeStamp):
+        return JsonResponse({"color": "loading"}, status=200)
+
+    # If the data contains bad signal
+    if model_to_dict(measure)["sdnn"] == -500:
+        return JsonResponse({"color": "bad_signal"}, status=200)
+
     # Fetch the user's saved colors (or default colors)
     emotion_colors = get_user_colors()
 
@@ -122,6 +148,25 @@ def my_api_endpoint(request):
     mapped_color = map_sdnn_to_color(sdnn_value, emotion_colors)
 
     return JsonResponse({"color": mapped_color})
+
+
+def is_recent(timestamp):
+    """
+    Checks if a timestamp is recent within a given threshold.
+
+    Args:
+        timestamp (datetime): The timestamp to check.
+
+    Returns:
+        bool: True if recent, False otherwise.
+    """
+    # Get current time
+    current_time = now()
+
+    # Calculate the time difference
+    time_difference = (current_time - timestamp).total_seconds()
+
+    return time_difference <= 60  # 60 seconds
 
 
 def map_sdnn_to_color(sdnn: float, emotion_colors) -> str:
@@ -137,7 +182,7 @@ def map_sdnn_to_color(sdnn: float, emotion_colors) -> str:
 
     # Map sdnn to a color based on ranges (arbitrary example ranges)
     if sdnn <= 0:
-        return "#616161" # Pulsing gray for no data
+        return "loading"  # Pulsing gray for no data
     elif sdnn < 20:
         return emotion_colors["very_sad"]
     elif 20 <= sdnn < 30:
@@ -149,7 +194,7 @@ def map_sdnn_to_color(sdnn: float, emotion_colors) -> str:
     elif 50 <= sdnn < 70:
         return emotion_colors["very_happy"]
     else:
-        return "#FF69B4" # Hot-pink stand-in for rainbow
+        return "#FF69B4"  # Hot-pink stand-in for rainbow
 
 
 def get_user_colors() -> dict:
