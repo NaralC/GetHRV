@@ -162,9 +162,22 @@
       >
         Reset to Defaults (Does not save)
       </button>
+
+       <!-- Breathing Exercise Button -->
+       <button
+       id="startBreathing"
+       type="button"
+       class="w-full bg-green-500 text-white font-semibold py-2 mt-4 rounded-lg hover:bg-green-600 transition"
+     >
+       Start Breathing Exercise
+     </button>
+
+   </div>
     </div>
 
     <script>
+      let isBreathing = false;
+
       // Function to load colors from localStorage
       function loadColors() {
         fetch("http://127.0.0.1:8000/colors/get-colors")
@@ -281,6 +294,32 @@
         document.getElementById("very-sad-color").value = defaultColors.verySad;
         document.getElementById("very-sad-hex").value = defaultColors.verySad;
       }
+
+      function startBreathingExercise() {
+        const button = document.getElementById("startBreathing");
+    
+        if (!isBreathing) {
+          // Start breathing mode
+          isBreathing = true;
+          button.textContent = "Stop Breathing Exercise";
+          button.classList.add("animate-pulse", "bg-red-500", "hover:bg-red-600");
+          button.classList.remove("bg-green-500", "hover:bg-green-600");
+          
+          // TODO: Start breathing animation (if applicable)
+    
+        } else {
+          // Stop breathing mode
+          isBreathing = false;
+          button.textContent = "Start Breathing Exercise";
+          button.classList.remove("animate-pulse", "bg-red-500", "hover:bg-red-600");
+          button.classList.add("bg-green-500", "hover:bg-green-600");
+    
+          // TODO: Stop breathing animation (if applicable)
+        }
+      }
+    
+      // Toggle breathing exercise on button click
+      document.getElementById("startBreathing").addEventListener("click", startBreathingExercise);
 
       // Event listeners
       document
