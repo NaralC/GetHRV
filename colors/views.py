@@ -25,6 +25,7 @@ def save_colors(request):
             colors.neutral = data.get("neutral", colors.neutral)
             colors.sad = data.get("sad", colors.sad)
             colors.very_sad = data.get("very_sad", colors.very_sad)
+            colors.is_breathing = data.get("is_breathing", colors.is_breathing)
             colors.save()
 
             return JsonResponse({"status": "success", "message": "Colors saved!"})
@@ -35,12 +36,16 @@ def save_colors(request):
         {"status": "error", "message": "Invalid request method"}, status=405
     )
 
+
 @csrf_exempt
 def get_colors(request):
+    """
+    Returns saved colors and breathing state.
+    """
     try:
         colors = EmotionColor.objects.first()
         if colors:
-            return JsonResponse(colors.to_dict())  # Ensure `as_dict()` exists in your model
+            return JsonResponse(colors.to_dict())
         else:
             return JsonResponse({
                 "very_happy": "#FFD700",
@@ -48,6 +53,31 @@ def get_colors(request):
                 "neutral": "#C0C0C0",
                 "sad": "#87CEEB",
                 "very_sad": "#1E90FF",
+                "is_breathing": False,
             })
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+
+@csrf_exempt
+def toggle_breathing(request):
+    """
+    Toggles the `is_breathing` state in the database.
+    """
+    if request.method == "POST":
+        try:
+            colors, _ = EmotionColor.objects.get_or_create(id=1)
+            colors.is_breathing = not colors.is_breathing  # Toggle state
+            colors.save()
+
+            return JsonResponse({
+                "status": "success",
+                "is_breathing": colors.is_breathing,
+                "message": "Breathing mode updated!"
+            })
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+    return JsonResponse(
+        {"status": "error", "message": "Invalid request method"}, status=405
+    )

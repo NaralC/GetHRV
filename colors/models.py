@@ -6,6 +6,7 @@ class EmotionColor(models.Model):
     neutral = models.CharField(max_length=7, default="#C0C0C0")
     sad = models.CharField(max_length=7, default="#87CEEB")
     very_sad = models.CharField(max_length=7, default="#1E90FF")
+    is_breathing = models.BooleanField(default=False)
 
     def to_dict(self):
         """
@@ -17,4 +18,5 @@ class EmotionColor(models.Model):
             "neutral": self.neutral,
             "sad": self.sad,
             "very_sad": self.very_sad,
+            "is_breathing": self.is_breathing,
         }

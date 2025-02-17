@@ -122,12 +122,20 @@ def my_api_endpoint(request):
     Returns the color associated with the latest SDNN value.
     Uses user-customized colors if available, otherwise defaults.
     """
+
+    # Check if the breathing tutorial is active
+    emotion_color = EmotionColor.objects.last()
+    is_breathing = emotion_color.is_breathing if emotion_color else False
+
+    if is_breathing:
+        return JsonResponse({"color": "is_breathing"}, status=200)
+
     # Retrieve the latest measure entry
     measure = Measures.objects.order_by("timeStamp").last()
 
-    # If data not found — it's still working out the HRV
+    # If data not found — HRV is still being processed
     if not measure or "sdnn" not in model_to_dict(measure):
-        return JsonResponse({"color": "loading"})
+        return JsonResponse({"color": "loading"}, status=200)
 
     print(f"Latest TimeStamp: {measure.timeStamp}")
 
@@ -135,16 +143,15 @@ def my_api_endpoint(request):
     if not is_recent(measure.timeStamp):
         return JsonResponse({"color": "loading"}, status=200)
 
-    # If the data contains bad signal
-    if model_to_dict(measure)["sdnn"] == -500:
+    # If the data contains a bad signal
+    sdnn_value = model_to_dict(measure)["sdnn"]
+    if sdnn_value == -500:
         return JsonResponse({"color": "bad_signal"}, status=200)
 
     # Fetch the user's saved colors (or default colors)
     emotion_colors = get_user_colors()
 
-    # Get the SDNN value and map it to the correct color
-    sdnn_value = model_to_dict(measure)["sdnn"]
-    print(sdnn_value)
+    # Map SDNN to the correct color
     mapped_color = map_sdnn_to_color(sdnn_value, emotion_colors)
 
     return JsonResponse({"color": mapped_color})
@@ -166,7 +173,7 @@ def is_recent(timestamp):
     # Calculate the time difference
     time_difference = (current_time - timestamp).total_seconds()
 
-    return time_difference <= 60  # 60 seconds
+    return time_difference <= 90  # 90 seconds
 
 
 def map_sdnn_to_color(sdnn: float, emotion_colors) -> str:
@@ -213,6 +220,7 @@ def get_user_colors() -> dict:
             "neutral": colors.neutral,
             "sad": colors.sad,
             "very_sad": colors.very_sad,
+            "is_breathing": colors.is_breathing,
         }
     else:
         # Default colors if none exist in the database
@@ -222,6 +230,7 @@ def get_user_colors() -> dict:
             "neutral": "#C0C0C0",  # Gray
             "sad": "#87CEEB",  # Light Blue
             "very_sad": "#1E90FF",  # Blue
+            "is_breathing": False,
         }
 
 
