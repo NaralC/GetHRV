@@ -238,3 +238,27 @@ def get_watch_data(request, android_id):
         return JsonResponse(
             {"error": "Watch data not found for the given Android ID."}, status=404
         )
+
+
+def get_sdnn_only(request):
+    """
+    Only returns the SDNN value for the latest measure entry.
+    """
+    # Retrieve the latest measure entry
+    measure = Measures.objects.order_by("timeStamp").last()
+
+    # If data not found — it's still working out the HRV
+    if not measure or "sdnn" not in model_to_dict(measure):
+        return JsonResponse({"sdnn": "loading"})
+
+    print(f"Latest TimeStamp: {measure.timeStamp}")
+
+    # Check if the latest timeStamp is recent
+    if not is_recent(measure.timeStamp):
+        return JsonResponse({"sdnn": "loading"}, status=200)
+
+    # If the data contains bad signal
+    if model_to_dict(measure)["sdnn"] == -500:
+        return JsonResponse({"sdnn": "bad_signal"}, status=200)
+
+    return JsonResponse({"sdnn": measure.sdnn})
