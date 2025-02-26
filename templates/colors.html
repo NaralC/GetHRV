@@ -8,149 +8,50 @@
       body {
         font-family: Inter;
       }
+      .rainbow {
+        background: linear-gradient(
+          90deg,
+          red,
+          orange,
+          yellow,
+          green,
+          blue,
+          indigo,
+          violet
+        );
+        color: white;
+        text-align: center;
+        font-weight: bold;
+      }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-100 min-h-screen flex items-center justify-center">
     <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
       <h1 class="text-2xl font-bold text-center text-gray-800 mb-4">
-        Customize Emotion Colors
+        Customize Emotion Colors & SDNN Thresholds
       </h1>
       <p class="text-gray-600 text-center mb-6">
-        <span class="font-bold text-[#FF69B4]">🌈 Rainbow</span> represents a
-        <b>very happy</b> state.
-        <br />
+        <span class="rainbow p-1 rounded-md">🌈 Rainbow</span> represents a
+        <b>very happy</b> state (Fixed).<br />
         <span class="font-bold text-[#616161] animate-pulse"
           >⬤ Pulsing Gray</span
         >
-        indicates <b>loading data</b>.
-        <br />
-        <span class="font-bold text-red-600 animate-blink"
-          >⬤ Flashing Red</span
-        >
-        indicates <b>there are errors</b> — consider restarting the Python server.
+        indicates <b>loading data</b>.<br />
+        <span class="font-bold text-red-600 animate-blink">⬤ Flashing Red</span>
+        indicates <b>errors</b> — consider restarting the Python server.
       </p>
 
       <form id="colorForm" class="space-y-4">
-        <!-- Very Happy -->
-        <div class="flex items-center justify-between">
-          <label for="very-happy-color" class="text-gray-700 font-medium w-1/3">
-            Very Relaxed:
-          </label>
-          <input
-            type="color"
-            id="very-happy-color"
-            name="very_happy"
-            value="#FFD700"
-            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
-          />
-          <input
-            type="text"
-            id="very-happy-hex"
-            name="very_happy_hex"
-            value="#FFD700"
-            class="border border-gray-300 rounded-lg w-24 text-center"
-            maxlength="7"
-          />
-        </div>
-
-        <!-- Happy -->
-        <div class="flex items-center justify-between">
-          <label for="happy-color" class="text-gray-700 font-medium w-1/3">
-            Relaxed:
-          </label>
-          <input
-            type="color"
-            id="happy-color"
-            name="happy"
-            value="#FFFF00"
-            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
-          />
-          <input
-            type="text"
-            id="happy-hex"
-            name="happy_hex"
-            value="#FFFF00"
-            class="border border-gray-300 rounded-lg w-24 text-center"
-            maxlength="7"
-          />
-        </div>
-
-        <!-- Neutral -->
-        <div class="flex items-center justify-between">
-          <label for="neutral-color" class="text-gray-700 font-medium w-1/3">
-            Neutral:
-          </label>
-          <input
-            type="color"
-            id="neutral-color"
-            name="neutral"
-            value="#C0C0C0"
-            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
-          />
-          <input
-            type="text"
-            id="neutral-hex"
-            name="neutral_hex"
-            value="#C0C0C0"
-            class="border border-gray-300 rounded-lg w-24 text-center"
-            maxlength="7"
-          />
-        </div>
-
-        <!-- Stressed -->
-        <div class="flex items-center justify-between">
-          <label for="sad-color" class="text-gray-700 font-medium w-1/3"
-            >Stressed:</label
-          >
-          <input
-            type="color"
-            id="sad-color"
-            name="sad"
-            value="#87CEEB"
-            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
-          />
-          <input
-            type="text"
-            id="sad-hex"
-            name="sad_hex"
-            value="#87CEEB"
-            class="border border-gray-300 rounded-lg w-24 text-center"
-            maxlength="7"
-          />
-        </div>
-
-        <!-- Very Stressed -->
-        <div class="flex items-center justify-between">
-          <label for="very-sad-color" class="text-gray-700 font-medium w-1/3">
-            Very Stressed:
-          </label>
-          <input
-            type="color"
-            id="very-sad-color"
-            name="very_sad"
-            value="#1E90FF"
-            class="w-12 h-12 border-2 border-gray-300 rounded-lg"
-          />
-          <input
-            type="text"
-            id="very-sad-hex"
-            name="very_sad_hex"
-            value="#1E90FF"
-            class="border border-gray-300 rounded-lg w-24 text-center"
-            maxlength="7"
-          />
-        </div>
-
-        <!-- Spacer -->
-        <div class="py-4" />
+        <!-- Color Settings -->
+        <div id="color-settings"></div>
 
         <!-- Save Button -->
         <button
           type="submit"
           class="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 transition"
         >
-          Save Colors
+          Save Colors & SDNN Thresholds
         </button>
       </form>
 
@@ -163,191 +64,185 @@
         Reset to Defaults (Does Not Save)
       </button>
 
-       <!-- Breathing Exercise Button -->
-       <button
-       id="startBreathing"
-       type="button"
-       class="w-full bg-green-500 text-white font-semibold py-2 mt-4 rounded-lg hover:bg-green-600 transition"
-     >
-       Start Breathing Exercise
-     </button>
-
-   </div>
+      <!-- Breathing Exercise Button -->
+      <button
+        id="startBreathing"
+        type="button"
+        class="w-full bg-green-500 text-white font-semibold py-2 mt-4 rounded-lg hover:bg-green-600 transition"
+      >
+        Start Breathing Exercise
+      </button>
     </div>
 
     <script>
-      let isBreathing = false;
+      const emotions = [
+        {
+          name: "Very Happy (Rainbow)",
+          id: "very_happy",
+          fixedColor: "#FF69B4",
+          defaultThreshold: 80,
+        },
+        {
+          name: "Very Relaxed",
+          id: "very_relaxed",
+          defaultColor: "#FFD700",
+          defaultThreshold: 60,
+        },
+        {
+          name: "Relaxed",
+          id: "relaxed",
+          defaultColor: "#FFFF00",
+          defaultThreshold: 50,
+        },
+        {
+          name: "Neutral",
+          id: "neutral",
+          defaultColor: "#C0C0C0",
+          defaultThreshold: 40,
+        },
+        {
+          name: "Stressed",
+          id: "sad",
+          defaultColor: "#87CEEB",
+          defaultThreshold: 30,
+        },
+        {
+          name: "Very Stressed",
+          id: "very_sad",
+          defaultColor: "#1E90FF",
+          defaultThreshold: 20,
+        },
+      ];
 
-      // Function to load colors from localStorage
+      function generateColorInputs() {
+        const container = document.getElementById("color-settings");
+        container.innerHTML = "";
+
+        emotions.forEach((emotion) => {
+          container.innerHTML += `
+            <div class="flex items-center justify-between mb-2">
+              <label for="${
+                emotion.id
+              }-color" class="text-gray-700 font-medium w-1/3">${
+            emotion.name
+          }:</label>
+              ${
+                emotion.fixedColor
+                  ? `
+                <div class="w-12 h-12 border-2 border-gray-300 rounded-lg rainbow"></div>
+              `
+                  : `
+                <input type="color" id="${emotion.id}-color" name="${emotion.id}" value="${emotion.defaultColor}"
+                  class="w-12 h-12 border-2 border-gray-300 rounded-lg" />
+                <input type="text" id="${emotion.id}-hex" name="${emotion.id}_hex" value="${emotion.defaultColor}"
+                  class="border border-gray-300 rounded-lg w-24 text-center" maxlength="7" />
+              `
+              }
+            </div>
+            <div class="flex items-center justify-between mb-4">
+              <label for="${
+                emotion.id
+              }-threshold" class="text-gray-700 font-medium w-1/3">SDNN Threshold:</label>
+              <input type="number" id="${emotion.id}-threshold" name="${
+            emotion.id
+          }_threshold" min="0" max="100"
+                value="${
+                  emotion.defaultThreshold
+                }" class="border border-gray-300 rounded-lg w-24 text-center" />
+            </div>
+          `;
+        });
+      }
+
       function loadColors() {
         fetch("http://127.0.0.1:8000/colors/get-colors")
           .then((response) => response.json())
           .then((colors) => {
-            // Use default colors if the response is missing any fields
-            const defaultColors = {
-              veryHappy: colors.very_happy || "#FFD700",
-              happy: colors.happy || "#FFFF00",
-              neutral: colors.neutral || "#C0C0C0",
-              sad: colors.sad || "#87CEEB",
-              verySad: colors.very_sad || "#1E90FF",
-            };
-      
-            // Set values for color pickers and hex inputs
-            document.getElementById("very-happy-color").value = defaultColors.veryHappy;
-            document.getElementById("very-happy-hex").value = defaultColors.veryHappy;
-            document.getElementById("happy-color").value = defaultColors.happy;
-            document.getElementById("happy-hex").value = defaultColors.happy;
-            document.getElementById("neutral-color").value = defaultColors.neutral;
-            document.getElementById("neutral-hex").value = defaultColors.neutral;
-            document.getElementById("sad-color").value = defaultColors.sad;
-            document.getElementById("sad-hex").value = defaultColors.sad;
-            document.getElementById("very-sad-color").value = defaultColors.verySad;
-            document.getElementById("very-sad-hex").value = defaultColors.verySad;
-      
-            // Store fetched colors in localStorage for faster subsequent loads
-            localStorage.setItem("emotionColors", JSON.stringify(defaultColors));
-      
-            // Set the initial state of the breathing toggle button
-            const isBreathing = colors.is_breathing || false;
-            updateBreathingButton(isBreathing);
+            emotions.forEach((emotion) => {
+              if (!emotion.fixedColor) {
+                document.getElementById(`${emotion.id}-color`).value =
+                  colors[emotion.id] || emotion.defaultColor;
+                document.getElementById(`${emotion.id}-hex`).value =
+                  colors[emotion.id] || emotion.defaultColor;
+              }
+              document.getElementById(`${emotion.id}-threshold`).value =
+                colors[`${emotion.id}_threshold`] ?? emotion.defaultThreshold;
+            });
+
+            localStorage.setItem("emotionColors", JSON.stringify(colors));
+            updateBreathingButton(colors.is_breathing || false);
           })
           .catch((error) => {
             console.error("Error fetching colors:", error);
           });
       }
-      
-      // Function to update the breathing button based on state
-      function updateBreathingButton(isBreathing) {
-        const button = document.getElementById("startBreathing");
-      
-        if (isBreathing) {
-          button.textContent = "Stop Breathing Exercise";
-          button.classList.add("animate-pulse", "bg-red-500", "hover:bg-red-600");
-          button.classList.remove("bg-green-500", "hover:bg-green-600");
-        } else {
-          button.textContent = "Start Breathing Exercise";
-          button.classList.remove("animate-pulse", "bg-red-500", "hover:bg-red-600");
-          button.classList.add("bg-green-500", "hover:bg-green-600");
-        }
-      }
 
-      // Call loadColors when the page loads
-      window.onload = loadColors;
-
-      // Function to save colors to localStorage
       function saveColors(event) {
         event.preventDefault();
 
-        const colors = {
-          very_happy: document.getElementById("very-happy-color").value,
-          happy: document.getElementById("happy-color").value,
-          neutral: document.getElementById("neutral-color").value,
-          sad: document.getElementById("sad-color").value,
-          very_sad: document.getElementById("very-sad-color").value,
-        };
+        const colors = {};
+        emotions.forEach((emotion) => {
+          if (!emotion.fixedColor) {
+            colors[emotion.id] = document.getElementById(
+              `${emotion.id}-color`
+            ).value;
+          }
+          colors[`${emotion.id}_threshold`] = parseInt(
+            document.getElementById(`${emotion.id}-threshold`).value,
+            10
+          );
+        });
 
         fetch("http://127.0.0.1:8000/colors/save-colors", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(colors),
         })
           .then((response) => response.json())
           .then((data) => {
             if (data.status === "success") {
-              alert("Colors saved successfully!");
+              alert("Colors and SDNN thresholds saved successfully!");
             } else {
-              alert("Error saving colors: " + data.message);
+              alert("Error saving: " + data.message);
             }
-          });
+          })
+          .catch((error) => console.error("Failed to save colors:", error));
       }
 
-      // Sync color pickers and hex inputs
-      function syncColorPickerWithHex(colorId, hexId) {
-        const colorPicker = document.getElementById(colorId);
-        const hexInput = document.getElementById(hexId);
-
-        // Update hex when color picker changes
-        colorPicker.addEventListener("input", () => {
-          hexInput.value = colorPicker.value.toUpperCase();
-        });
-
-        // Update color picker when hex input changes
-        hexInput.addEventListener("input", () => {
-          if (/^#[0-9A-F]{6}$/i.test(hexInput.value)) {
-            colorPicker.value = hexInput.value.toUpperCase();
-          }
-        });
-      }
-
-      // Function to reset colors temporarily
       function resetColors() {
-        const defaultColors = {
-          veryHappy: "#FFD700",
-          happy: "#FFFF00",
-          neutral: "#C0C0C0",
-          sad: "#87CEEB",
-          verySad: "#1E90FF",
-        };
-
-        document.getElementById("very-happy-color").value =
-          defaultColors.veryHappy;
-        document.getElementById("very-happy-hex").value =
-          defaultColors.veryHappy;
-        document.getElementById("happy-color").value = defaultColors.happy;
-        document.getElementById("happy-hex").value = defaultColors.happy;
-        document.getElementById("neutral-color").value = defaultColors.neutral;
-        document.getElementById("neutral-hex").value = defaultColors.neutral;
-        document.getElementById("sad-color").value = defaultColors.sad;
-        document.getElementById("sad-hex").value = defaultColors.sad;
-        document.getElementById("very-sad-color").value = defaultColors.verySad;
-        document.getElementById("very-sad-hex").value = defaultColors.verySad;
+        generateColorInputs();
       }
 
       function toggleBreathingExercise() {
-        const button = document.getElementById("startBreathing");
-      
         fetch("http://127.0.0.1:8000/colors/toggle-breathing", {
           method: "POST",
         })
           .then((response) => response.json())
-          .then((data) => {
-            if (data.status === "success") {
-              const isBreathing = data.is_breathing;
-      
-              if (isBreathing) {
-                // Start breathing mode
-                button.textContent = "Stop Breathing Exercise";
-                button.classList.add("animate-pulse", "bg-red-500", "hover:bg-red-600");
-                button.classList.remove("bg-green-500", "hover:bg-green-600");
-      
-                // TODO: Start breathing animation (if applicable)
-              } else {
-                // Stop breathing mode
-                button.textContent = "Start Breathing Exercise";
-                button.classList.remove("animate-pulse", "bg-red-500", "hover:bg-red-600");
-                button.classList.add("bg-green-500", "hover:bg-green-600");
-      
-                // TODO: Stop breathing animation (if applicable)
-              }
-            } else {
-              console.error("Error updating breathing state:", data.message);
-            }
-          })
-          .catch((error) => {
-            console.error("Failed to toggle breathing mode:", error);
-          });
+          .then((data) => updateBreathingButton(data.is_breathing))
+          .catch((error) =>
+            console.error("Failed to toggle breathing:", error)
+          );
       }
-      
-      // Attach event listener to the button
-      document.getElementById("startBreathing").addEventListener("click", toggleBreathingExercise);
-      
-    
-      // Toggle breathing exercise on button click
-      document.getElementById("startBreathing").addEventListener("click", toggleBreathingExercise);
 
-      // Event listeners
+      function updateBreathingButton(isBreathing) {
+        const button = document.getElementById("startBreathing");
+        if (isBreathing) {
+          button.textContent = "Stop Breathing Exercise";
+          button.classList.add(
+            "animate-pulse",
+            "bg-red-500",
+            "hover:bg-red-600"
+          );
+        } else {
+          button.textContent = "Start Breathing Exercise";
+          button.classList.remove(
+            "animate-pulse",
+            "bg-red-500",
+            "hover:bg-red-600"
+          );
+        }
+      }
+
       document
         .getElementById("colorForm")
         .addEventListener("submit", saveColors);
@@ -355,15 +250,8 @@
         .getElementById("resetColors")
         .addEventListener("click", resetColors);
 
-      // Sync all color pickers and hex inputs
-      syncColorPickerWithHex("very-happy-color", "very-happy-hex");
-      syncColorPickerWithHex("happy-color", "happy-hex");
-      syncColorPickerWithHex("neutral-color", "neutral-hex");
-      syncColorPickerWithHex("sad-color", "sad-hex");
-      syncColorPickerWithHex("very-sad-color", "very-sad-hex");
-
-      // Load colors on page load
-      window.onload = loadColors;
+      generateColorInputs();
+      loadColors();
     </script>
   </body>
 </html>

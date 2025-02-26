@@ -120,7 +120,7 @@ def post(request):
 def my_api_endpoint(request):
     """
     Returns the color associated with the latest SDNN value.
-    Uses user-customized colors if available, otherwise defaults.
+    Uses user-customized colors and thresholds if available, otherwise defaults.
     """
 
     # Check if the breathing tutorial is active
@@ -133,7 +133,7 @@ def my_api_endpoint(request):
     # Retrieve the latest measure entry
     measure = Measures.objects.order_by("timeStamp").last()
 
-    # If data not found — HRV is still being processed
+    # If no measure data found — HRV is still being processed
     if not measure or "sdnn" not in model_to_dict(measure):
         return JsonResponse({"color": "loading"}, status=200)
 
@@ -148,11 +148,33 @@ def my_api_endpoint(request):
     if sdnn_value == -500:
         return JsonResponse({"color": "bad_signal"}, status=200)
 
-    # Fetch the user's saved colors (or default colors)
-    emotion_colors = get_user_colors()
+    # Fetch user-customized colors and SDNN thresholds
+    emotion_data = get_user_colors()
 
-    # Map SDNN to the correct color
-    mapped_color = map_sdnn_to_color(sdnn_value, emotion_colors)
+    # Extract thresholds
+    thresholds = {
+        "very_happy": emotion_data["very_happy_threshold"],
+        "very_relaxed": emotion_data["very_relaxed_threshold"],
+        "relaxed": emotion_data["relaxed_threshold"],
+        "neutral": emotion_data["neutral_threshold"],
+        "sad": emotion_data["sad_threshold"],
+        "very_sad": emotion_data["very_sad_threshold"],
+    }
+    print(thresholds)
+
+    # Determine the color based on SDNN value
+    if sdnn_value >= thresholds["very_happy"]:
+        mapped_color = "#FF69B4"  # Fixed Rainbow for Very Happy
+    elif sdnn_value >= thresholds["very_relaxed"]:
+        mapped_color = emotion_data["very_relaxed"]
+    elif sdnn_value >= thresholds["relaxed"]:
+        mapped_color = emotion_data["relaxed"]
+    elif sdnn_value >= thresholds["neutral"]:
+        mapped_color = emotion_data["neutral"]
+    elif sdnn_value >= thresholds["sad"]:
+        mapped_color = emotion_data["sad"]
+    else:
+        mapped_color = emotion_data["very_sad"]
 
     return JsonResponse({"color": mapped_color})
 
@@ -206,31 +228,45 @@ def map_sdnn_to_color(sdnn: float, emotion_colors) -> str:
 
 def get_user_colors() -> dict:
     """
-    Retrieves user-customized emotion colors from the database or defaults.
+    Retrieves user-customized emotion colors and SDNN thresholds from the database, or defaults.
 
     Returns:
-        dict: A dictionary mapping emotions to their respective colors.
+        dict: A dictionary mapping emotions to their respective colors and thresholds.
     """
     colors = EmotionColor.objects.first()  # Get the first saved color settings
 
     if colors:
         return {
             "very_happy": colors.very_happy,
-            "happy": colors.happy,
+            "very_relaxed": colors.very_relaxed,
+            "relaxed": colors.relaxed,
             "neutral": colors.neutral,
             "sad": colors.sad,
             "very_sad": colors.very_sad,
             "is_breathing": colors.is_breathing,
+            "very_happy_threshold": colors.very_happy_threshold,
+            "very_relaxed_threshold": colors.very_relaxed_threshold,
+            "relaxed_threshold": colors.relaxed_threshold,
+            "neutral_threshold": colors.neutral_threshold,
+            "sad_threshold": colors.sad_threshold,
+            "very_sad_threshold": colors.very_sad_threshold,
         }
     else:
-        # Default colors if none exist in the database
+        # Default colors and thresholds if none exist in the database
         return {
-            "very_happy": "#FFD700",  # Gold
-            "happy": "#FFFF00",  # Yellow
+            "very_happy": "#FF69B4",  # Fixed Rainbow for Very Happy 🌈
+            "very_relaxed": "#FFD700",  # Gold
+            "relaxed": "#FFFF00",  # Yellow
             "neutral": "#C0C0C0",  # Gray
             "sad": "#87CEEB",  # Light Blue
             "very_sad": "#1E90FF",  # Blue
             "is_breathing": False,
+            "very_happy_threshold": 70,
+            "very_relaxed_threshold": 60,
+            "relaxed_threshold": 50,
+            "neutral_threshold": 40,
+            "sad_threshold": 30,
+            "very_sad_threshold": 20,
         }
 
 
